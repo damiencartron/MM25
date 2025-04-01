@@ -1,6 +1,12 @@
 library(readxl)
+library(openxlsx)
 library(tidyverse)
 library(descr)
+library(babynames)
+
+PDI <- read_excel("D:/Document/Cours&TD/QESS 2024-25/MonMaster/Candidatures/MM/MM_in/20250401_11H10_0753742K_EHESS PARIS_329.xlsx", .name_repair = "universal") |> 
+  rename(id = "Numéro.de.candidat") |> 
+  mutate(PDI = "PDI")
 
 Cand <- read_excel("D:/Document/Cours&TD/QESS 2024-25/MonMaster/Candidatures/MM/MM_in/20250401_08H56_0753742K_EHESS PARIS_330.xlsx", .name_repair = "universal") |>   
   rename(
@@ -43,8 +49,77 @@ Cand <- read_excel("D:/Document/Cours&TD/QESS 2024-25/MonMaster/Candidatures/MM/
     LYMoyS2 = "Moyenne.au.second.semestre...45", 
     LYEtb = "Établissement...46"  
     
+    ) |> 
+  arrange(Nom, Prenom)|> 
+  mutate(
+    Nom = str_to_upper(Nom), 
+    Prenom = str_to_title(Prenom),
+    NumAlpha = row_number(),
+    Cursus = case_when(
+      (str_detect(LYFormation, "CPGE") | str_detect(LYFormation, "Préparation concours")) ~"CPGE",
+      str_detect(LYFormation, "CPES") ~"CPES",
+      str_detect(LYEtb, regex("normale", ignore_case = TRUE)) ~"ENS", 
+      str_detect(LYFormation, "Licence") ~str_glue("L3:{LYSpe}"),
+      str_detect(LYFormation, "Maîtrise") ~"Maitrise",
+      str_detect(LYFormation, "Magistère") ~"Magistere", 
+      str_detect(LYFormation, "Master") ~str_glue("Master:{LYSpe}"),
+      str_detect(LYFormation, "Autre diplôme") ~"Autre diplôme"
+    ),
+    Cursus = if_else(Cursus == "L3:Mathématiques et informatique appliquées aux sciences humaines et sociales", "L3:MIASHS", Cursus), 
+    Cursus = if_else(str_detect(Cursus, "MEEF"), "Master:MEEF", Cursus), 
+    R1 = if_else(NumAlpha%%2 == 0, "DC","EP"),
+    R2 = case_when(
+      (NumAlpha - 1) %% 9 == 0 ~"BG", 
+      (NumAlpha - 2) %% 9 == 0 ~"AA", 
+      (NumAlpha - 3) %% 9 == 0 ~"RD", 
+      (NumAlpha - 4) %% 9 == 0 ~"FM", 
+      (NumAlpha - 5) %% 9 == 0 ~"JD", 
+      (NumAlpha - 6) %% 9 == 0 ~"CB", 
+      (NumAlpha - 7) %% 9 == 0 ~"FM", 
+      (NumAlpha - 8) %% 9 == 0 ~"JD", 
+      (NumAlpha - 9) %% 9 == 0 ~"CB" 
+      
     )
+  )  |> 
+  relocate(NumAlpha, R1, R2) 
+
+Cand <- left_join(Cand, PDI |> select(id, PDI), by = "id")
+
+Cand |> filter(PDI == "PDI")
 
 names(Cand)
 
 table(Cand$MentionBac)
+
+PrExport <- Cand |> 
+  mutate(TypeEtudiant = )
+  relocate(NumAlpha,Nom, Prenom,Civilite, id, Cursus, PDI, DOB, Nationalite, LYetude, LYDiplFR, LYNivDipl, LYFormation, LYAnnCursus, LYSpe, LYParcours, LYMoyS1, LYMoyS2, LYEtb ,DateBac, TypeBac, SerieBac, MentionBac) 
+  
+
+write.xlsx(PrExport, "Candidatures.xlsx")
+
+
+# t <- Cand |> 
+#   select(LYFormation, LYSpe, LYEtb, PDI) |> 
+#   mutate(
+# Cursus = case_when(
+#   (str_detect(LYFormation, "CPGE") | str_detect(LYFormation, "Préparation concours")) ~"CPGE",
+#   str_detect(LYFormation, "CPES") ~"CPES",
+#   str_detect(LYEtb, regex("normale", ignore_case = TRUE)) ~"ENS", 
+#   str_detect(LYFormation, "Licence") ~str_glue("L3:{LYSpe}"),
+#   str_detect(LYFormation, "Maîtrise") ~"Maitrise",
+#   str_detect(LYFormation, "Magistère") ~"Magistere", 
+#   str_detect(LYFormation, "Master") ~str_glue("Master:{LYSpe}"),
+#   str_detect(LYFormation, "Autre diplôme") ~"Autre diplôme"
+#   ),
+# Cursus = if_else(Cursus == "L3:Mathématiques et informatique appliquées aux sciences humaines et sociales", "L3:MIASHS", Cursus), 
+# Cursus = if_else(str_detect(Cursus, "MEEF"), "Master:MEEF", Cursus)) 
+#   
+
+table(Cand$R2)
+################################################
+str_view(fruit, "berry")
+
+str_view(c("a", "ab", "ae", "bd", "ea", "eab"), "a.")
+str_view(fruit, "a...e")
+str_detect(c("a", "b", "c"), "[aeiou]")
