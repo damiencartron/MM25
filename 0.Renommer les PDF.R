@@ -43,3 +43,19 @@ table(Cand$R1,Cand$R2)
 
 setwd(wdorigin)
 
+# Rien à voir : faire une liste de lecture aléatoire des dossiers de Damien --------
+df <- Cand |> 
+  filter(R1=="DC" & NumAlpha < 209) |> 
+  select(NumAlpha)
+
+vect <- as.vector(df$NumAlpha)
+t <- sample(vect,length(vect))
+
+
+dt <- as.data.frame(t) |> 
+  rename(NumAlpha = t) |> 
+  left_join(Cand |> select(NumAlpha, Nom, Prenom), by = "NumAlpha")
+
+write.xlsx(dt,"ListeDamien.xlsx")
+
+getwd()

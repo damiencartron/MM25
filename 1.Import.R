@@ -85,15 +85,14 @@ Cand <- read_excel("D:/Document/Cours&TD/QESS 2024-25/MonMaster/Candidatures/MM/
 
 Cand <- left_join(Cand, PDI |> select(id, PDI), by = "id")
 
-Cand |> filter(PDI == "PDI")
+Cand |> filter(PDI == "PDI") |> count()
 
 names(Cand)
 
 table(Cand$MentionBac)
 
 PrExport <- Cand |> 
-  mutate(TypeEtudiant = )
-  relocate(NumAlpha,Nom, Prenom,Civilite, id, Cursus, PDI, DOB, Nationalite, LYetude, LYDiplFR, LYNivDipl, LYFormation, LYAnnCursus, LYSpe, LYParcours, LYMoyS1, LYMoyS2, LYEtb ,DateBac, TypeBac, SerieBac, MentionBac) 
+  relocate(NumAlpha,Nom, Prenom, Civilite, id, Cursus,R1, R2, PDI, DOB, Nationalite, LYetude, LYDiplFR, LYNivDipl, LYFormation, LYAnnCursus, LYSpe, LYParcours, LYMoyS1, LYMoyS2, LYEtb ,DateBac, TypeBac, SerieBac, MentionBac) 
   
 
 write.xlsx(PrExport, "Candidatures.xlsx")
