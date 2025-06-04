@@ -95,8 +95,9 @@ PrExport <- Cand |>
   relocate(NumAlpha,Nom, Prenom, Civilite, id, Cursus,R1, R2, PDI, DOB, Nationalite, LYetude, LYDiplFR, LYNivDipl, LYFormation, LYAnnCursus, LYSpe, LYParcours, LYMoyS1, LYMoyS2, LYEtb ,DateBac, TypeBac, SerieBac, MentionBac) 
   
 
+setwd(here())
 write.xlsx(PrExport, "Candidatures.xlsx")
-
+write_parquet(PrExport, "Cand_Origine.parquet")
 
 # t <- Cand |> 
 #   select(LYFormation, LYSpe, LYEtb, PDI) |> 

@@ -1,0 +1,295 @@
+---
+title: "Tableau de bord"
+author: "Damien"
+date: "2024-06-07"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+````{r, results="hide", include = FALSE}
+source("1b.Import.R", encoding = "UTF-8")
+
+````
+
+
+# Suivi Nombre accepté par type
+````{r bars}
+PileData$Resultat <- as.factor(PileData$Resultat)
+PileData$Resultat <- factor(PileData$Resultat, levels = c("Admis_Def", "Admis_Prov", "AttenteRep", "LC", "Refusé", "Non traité", "NA"))
+#Inverser l'ordre du facteur 
+PileData$Resultat <- factor(PileData$Resultat, levels = rev(levels(PileData$Resultat)))
+ggplot(PileData, aes(x = DateFichier, fill = Resultat)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Nombre de candidats acceptés par date", x = "Date", y = "Nombre de candidats")
+````
+
+
+````{r }
+AdmisDef <- subset(PileData, Resultat == "Admis_Def" )  
+ggplot(AdmisDef, aes(x = DateFichier, fill = Resultat)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Nombre de candidats acceptés définitivement par date", x = "Date", y = "Nombre de candidats")  +
+  scale_y_continuous(breaks = seq(0,20,by = 2))
+
+AdmisDefProv <- subset(PileData, Resultat == "Admis_Def" | Resultat == "Admis_Prov" )  
+ggplot(AdmisDefProv, aes(x = DateFichier, fill = Resultat)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Nombre de candidats acceptés (définitivement ou provisoirement) par date", x = "Date", y = "Nombre de candidats")  +
+  scale_y_continuous(breaks = seq(0,20,by = 2))
+
+PileData %>% filter(Resultat == "Admis_Def" | Resultat == "Admis_Prov" | Resultat == "AttenteRep") %>% ggplot(aes(x = DateFichier, fill = Resultat)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Nombre d'étudiants potentiels par date", x = "Date", y = "Nombre de candidats")  +
+  scale_y_continuous(breaks = seq(0,50,by = 2)) # écrit en tidyyverse c'est quand même plus classe ! 
+
+````
+
+## Répartition des étudiants pour EHESS puis ENS 
+
+````{r}
+#Répartition du statut des candidats pour l'EHESS et l'ENS
+table(EHESS$Statut_EHESS)
+
+table(ENS$Statut_ENS)
+
+table(SyntheseDuJour$Resultat, SyntheseDuJour$Etb)
+
+````
+````{r}  
+# QQ stats de base ---- 
+SyntheseDuJour %>% group_by(Resultat,) %>% summarise(Count = n())
+
+````
+
+L'ENS est en surbooking clair depuis le 8 juin ; arrêt du surbooking sur MM depuis ce jour (7 Def et 4 prov à cette date )
+Le 11 juin j'ai arrêté le surbooking de l'EHESS et même j'ai dit que j'avais attribué 2 places hors mon master (dans l'espoir qu'on descende la liste à 7 et qu'on ne propose plus à personne le temps que je fasse le point)
+
+````{r}
+# créer un fichier PrStat qui ne conserve que les Etb de SyntheseDuJour qui ne sont pas des NA
+PrStat <- SyntheseDuJour[!is.na(SyntheseDuJour$Etb),]
+#table(PrStat$Resultat,PrStat$Etb)
+#table(SyntheseDuJour$Resultat,SyntheseDuJour$Etb)
+
+
+  
+#SyntheseDuJour %>% group_by(Resultat, Etb) %>% summarise(Count = n())
+SyntheseDuJour %>% group_by(Resultat, Etb) %>% summarise(Count = n()) %>% ggplot(aes(x = Resultat, y = Count, fill = Etb)) + geom_bar(stat = "identity")
+
+````
+
+
+## Suivi des listes d'attente 
+
+* Rang 1er LC de l'EHESS : `r min(SyntheseDuJour$NoteEval[SyntheseDuJour$LC_EHESS == 1], na.rm = TRUE)`
+* Candidat 1er LC de l'EHESS : `r min(SyntheseDuJour$Candidat[SyntheseDuJour$LC_EHESS == 1], na.rm = TRUE)`
+* Rang du LC1 de l'EHESS sur la liste de l'ENS : `r min(SyntheseDuJour$LC_ENS[SyntheseDuJour$LC_EHESS == 1], na.rm = TRUE)`
+
+* Rang 1er LC de l'ENS : `r min(SyntheseDuJour$NoteEval[SyntheseDuJour$LC_ENS == 1], na.rm = TRUE)`
+* Candidat 1er LC de l'ENS : `r min(SyntheseDuJour$Candidat[SyntheseDuJour$LC_ENS == 1], na.rm = TRUE)`
+* Statut du LC1 de l'ENS : `r min(SyntheseDuJour$Resultat[SyntheseDuJour$LC_ENS == 1], na.rm = TRUE)`
+
+
+## Suivi des candidats qui sont en acceptés provisoires EHESS
+
+```{r}
+SyntheseDuJour %>% filter(Resultat == "Admis_Prov" & Etb == "EHESS") %>% select(Candidat, Statut_EHESS, Statut_ENS )
+```
+
+Donc aujourd'hui, le 19 juin les 5 candidats Admis provisoirement attendent en fait juste probablement d'être admis sur la liste ENS 
+Au final (22 juin) c'est moins net puisque nous avons eu une démission et Lola qui hésite avec Amsterdam
+
+## Les évolutions du jour 
+````{r Evolutions du jour}
+evol <- merge( SyntheseVeille, SyntheseDuJour, by = "id")
+(myliste <- evol %>% select(Candidat.x, Resultat.x, Resultat.y) %>% filter(Resultat.x != Resultat.y))
+(evol %>% filter(Resultat.x != Resultat.y) %>%  select(Candidat.x, ClassTot.x, NoteEval.x, Classement.x, Commentaires.x))
+````
+
+
+
+# Description des candidats admis
+## Liste des candidats admis à l'ENS
+### Admis définitivement (ENS)
+````{r}
+# Liste des candidats admis à l'ENS
+(subset(SyntheseDuJour, Resultat == "Admis_Def" & Etb == "ENS") %>%  select(Candidat, ClassTot, NoteEval, Classement, Commentaires))
+```` 
+
+### Admis provisoirement (ENS)
+
+````{r}
+(subset(SyntheseDuJour, Resultat == "Admis_Prov" & Etb == "ENS") %>%  select(Candidat, ClassTot, NoteEval, Classement, Commentaires))
+
+````
+Point le 14 juin : Sur les 9 définitifs on 1 admissible ENS (+ IEP mais je pense qu'il va nous prendre plutôt que l'IEP). Les autres sont clairement pour nous je pense. 
+Celui qui a provisoirement accepté me semblerait parfait mais manifestement il espère autre chose ; lui écrire ? ==> fait il est LC2 sur une formation qu'il préfère (qui n'a que 15 places mais bon il devrait l'avoir) 
+==> Gain potentiel de 2 places au max (1 définitive et 1 provisoire) ; une place probable 
+Point le 19 juin : aucun de nos candidats n'est pris au DENS ; donc j'arrête le surbooking ; nous sommes à 2 surbooké à l'EHESS sachant qu'il y a tjrs 3 admissibles ENS et 5 admis provisoires
+
+## Liste des candidats admis à l'EHESS
+### Admis définitivement (EHESS)
+
+```{r}
+# Liste des candidats admis à l'EHESS
+(subset(SyntheseDuJour, Resultat == "Admis_Def" & Etb == "EHESS") %>%  select(Candidat, ClassTot, NoteEval, Classement, Commentaires))
+```
+
+### Admis provisoirement (EHESS)
+
+```{r}
+(subset(SyntheseDuJour, Resultat == "Admis_Prov" & Etb == "EHESS") %>%  select(Candidat, ClassTot, NoteEval, Classement, Commentaires))
+
+```
+Point le 14 juin : Au Final parmis les 4 admis définitivement, Julienne au moins risque de nous quitter car admissible pour la 2ème fois aux ENS. Lecuit était hyper motivée, les autres semblent aussi sûr
+
+==> bref on libère une demi-place 
+Pour les provisoires : Etienne est admissible à l'ENS-Ulm, Pour les autres difficiles de savoir 
+==> Au total on peut faire une hypothèse raisonnable qu'on va perdre entre 2 et 3 étudiants entre les normaliens et les démissions pour admission dans d'autres masters
+
+==> Entre l'EHESS et l'ENS on peut perdre entre 1 étudiant au mieux, et au pire 3 normaliens + 1 à 2 qui ont un autre master
+Nous avons aujourd'hui 19 admis pour 18 places ; si on libère 2 places à l'EHESS on prend le risque d'être 23 au total mais peu probable) // si je fais ça ça veut dire que dès que l'un des nouveaux admis accepte la formation il faut diminuer le surbooking de 1. 
+
+Le 14 juin j'ai décidé d'augmenter de deux la donnée d'appel pour l'EHESS et de laisser celle de l'ENS inchangée. (j'ai également laissé l'indication que nous avions trouvé deux candidats par ailleurs)
+
+## Rang et classement des admis 
+
+```{r Rang de classement des étudiants admis}
+# Créer une variable RankCl qui regroupe par 10 les rangs de classement (NoteEval)
+SyntheseDuJour$RankCl <- cut(SyntheseDuJour$NoteEval, breaks = seq(0, 100, by = 10), labels = c("0-10", "11-20", "21-30", "31-40", "41-50", "51-60", "61-70", "71-80", "81-90", "91-100"))
+SyntheseDuJour %>% filter(Resultat == "Admis_Def" | Resultat  == "Admis_Prov") %>%  group_by(RankCl) %>% summarise(Count = n()) %>% 
+  ggplot(aes(x = RankCl, y = Count, fill = "count")) + 
+  geom_bar(stat = "identity")+
+  theme(axis.text.x = element_text(angle = 0, hjust = 1))
+```
+
+### Répartition par classe de classement pour les admis définitifs et provisoires, puis Admis_Def, puis Admis_Prov
+
+```{r}
+SyntheseDuJour %>% filter(Resultat == "Admis_Def" | Resultat  == "Admis_Prov") %>%  group_by(RankCl) %>% summarise(Count = n()) 
+SyntheseDuJour %>% filter(Resultat == "Admis_Def") %>%  group_by(RankCl) %>% summarise(Count = n())
+SyntheseDuJour %>% filter( Resultat  == "Admis_Prov") %>%  group_by(RankCl) %>% summarise(Count = n())
+
+```
+
+### Répartition par note pour les admis définitifs et provisoires, puis Admis_Def, puis Admis_Prov, puis AttenteRep
+
+```{r}
+SyntheseDuJour %>% filter(Resultat == "Admis_Def" | Resultat  == "Admis_Prov") %>%  group_by(Classement) %>% summarise(Count = n())
+SyntheseDuJour %>% filter(Resultat == "Admis_Def") %>%  group_by(Classement) %>% summarise(Count = n())
+SyntheseDuJour %>% filter(Resultat == "Admis_Prov") %>%  group_by(Classement) %>% summarise(Count = n())
+SyntheseDuJour %>% filter(Resultat == "AttenteRep") %>%  group_by(Classement) %>% summarise(Count = n())
+
+```
+
+## Genre des admis 
+```{r}
+#SyntheseDuJour$Genre <- as.factor(ifelse(SyntheseDuJour$Civilite == "M.", "Homme", "Femme"))
+SyntheseDuJour$Genre <- factor(ifelse(SyntheseDuJour$Civilite == "M.", "Homme", "Femme"), levels = c("Homme", "Femme"))
+
+SyntheseDuJour %>% 
+  filter(Resultat == "Admis_Def" | Resultat  == "Admis_Prov") %>%  
+  group_by(Genre) %>% 
+  summarise(Count = n())
+
+Sexe <- SyntheseDuJour %>% 
+  filter(Resultat == "Admis_Def" | Resultat  == "Admis_Prov") 
+round(prop.table(table(Sexe$Genre))*100,0)
+
+```
+
+## Age des admis 
+```{r}
+# SyntheseDuJour$Age <- as.numeric((as.Date(Sys.Date()) - as.Date(SyntheseDuJour$DOB)))/365.25 # fonctionne pas
+SyntheseDuJour$Age <- as.numeric(2024) - as.numeric(substr(SyntheseDuJour$DOB, 7, 11))
+SyntheseDuJour %>% filter(Resultat == "Admis_Def" | Resultat  == "Admis_Prov") %>%  group_by(Age) %>% summarise(Count = n())
+```
+
+## Mention au bac des Admis
+### Mention au bac yc Covid
+
+```{r}
+
+## Mention au bac des retenus 
+Mention <- merge(SyntheseDuJour %>% filter(Resultat == "Admis_Def" | Resultat =="Admis_Prov"), 
+                 EvalComplete %>% select("id", ,"Type de baccalauréat ou titre admis en équivalence", "Série du baccalauréat", "Année d’obtention du baccalauréat","Mention obtenue")
+                 , by = "id")
+Mention$`Mention obtenue` <- ifelse(Mention$`Mention obtenue` == "Très bien avec les félicitations du jury", "TTB", Mention$`Mention obtenue`)
+table(Mention$`Mention obtenue`)
+round(prop.table(table(Mention$`Mention obtenue`))*100,1)
+
+```
+
+### Mention au bac hors Covid
+
+```{r}
+MentionHorsCovid <-  Mention %>% filter(`Année d’obtention du baccalauréat` != "2020") 
+table(MentionHorsCovid$`Mention obtenue`)
+round(prop.table(table(MentionHorsCovid$`Mention obtenue`))*100,1)
+
+```
+
+
+
+
+# Suivi de la liste d'attente
+## Évolution du nombre de candidats en liste d'attente
+
+```{r}
+# Graphique nombre de candidats en liste d'attente par date
+LC <- subset(PileData, Resultat == "LC" )
+ggplot(LC, aes(x = DateFichier, fill = Resultat)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Nombre de candidats en liste d'attente par date", x = "Date", y = "Nombre de candidats")
+```
+
+## Suivi des profils des candidats en liste d'attente EHESS
+
+```{r}
+# Profil des candidats en liste d'attente EHESS
+SyntheseDuJour %>% filter(Statut_EHESS == "LISTE_ATTENTE") %>%  select(Candidat, ClassTot, NoteEval, Classement, Commentaires)
+
+```
+
+## Suivi des profils des candidats en liste d'attente ENS
+
+```{r}
+# Profil des candidats en liste d'attente ENS
+SyntheseDuJour %>% filter(Statut_ENS == "LISTE_ATTENTE") %>%  select(Candidat, Statut_EHESS, ClassTot, NoteEval, Classement, Commentaires)
+
+```
+
+
+Au final avec le départ de Tangy José sur l'ENS on va arriver à Mensh Elise qui devrait refuser puis à Merzouk Munia qui a accepté l'EHESS mais est restée à l'ENS ; 
+- si elle prend la place elle libère une place à l'EHESS ==> Cheikh est appelée 
+- Si elle ne prend pas la place on passe à Etienne Pierre Antoine Admis Prov EHESS 
+
+J'ai écrit un peu à tout ce petit monde le 21 juin au soir ; j'attends de voir demain matin pour prendre une décision
+
+Point au 22 juin matin : 
+- ENS : Nombre de candidats : J'ai 9 - 1 (Tanguy) sur ENS ==> 8 réels (dont 0 admissibles)
+- EHESS : Nombre de canddiats : J'a 10 - 1 (Lola ? pas répondu mais On pense qu'elle va choisir Amsterdam) - 2 Admissibles 
+
+==> En toute logique il faudrait que j'ouvre 1 à 2 places sur la liste EHESS 
+
+- Mensh Elise a démissionné de la liste ENS ainsi que Lignières (ce qui nettoie pas mal la liste ENS)
+
+Point le dernier jour (le 24 juin)
+- En fait je me suis trompé le samedi en n'ouvrant qu'une place en surbooking alors que je voulais en ouvrir deux (j'ai pas fait attention au fait qu'on était déjà 10)
+- J'ai ouvert la place manquante le dimanche mais manifestement ça ne sert à rien et les places n'ont pas été offertes aux derniers de la liste
+
+On a donc au final 
+- 9 à l'ENS en définitif (mais donc au moins un qui part et on le sait) ==> 8
+- 9 à l'EHESS dont deux admissibles aux ENS + Lola qui risque de choisir Amsterdam ==> 6 à 9
+- + 2 à hors mon master
+==> TOTAL de 16 à 19 max (si personne d'autre ne nous quitte après mon master)

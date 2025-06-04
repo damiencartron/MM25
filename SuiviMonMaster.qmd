@@ -1,0 +1,265 @@
+---
+title: "Suivi mon master 2025"
+author: "Damien Cartron"
+format: docx
+editor: visual
+---
+
+```{r}
+#| echo: false
+#| message: false
+
+library(arrow)
+source("3.ImportFichiersMM.R", encoding = "UTF-8")
+```
+
+# Évolution des statuts de candidature
+
+```{r}
+#| echo: false
+PileData$Resultat <- as.factor(PileData$Resultat)
+PileData$Resultat <- factor(PileData$Resultat, levels = c("Admis_Def", "Admis_Prov", "AttenteRep", "LC", "Refusé", "Non traité", "NA"))
+#Inverser l'ordre du facteur 
+PileData$Resultat <- factor(PileData$Resultat, levels = rev(levels(PileData$Resultat)))
+ggplot(PileData, aes(x = DateFichier, fill = Resultat)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Nombre de candidats acceptés par date", x = "Date", y = "Nombre de candidats")
+```
+
+```{r}
+#| echo: false
+AdmisDef <- subset(PileData, Resultat == "Admis_Def" )  
+ggplot(AdmisDef, aes(x = DateFichier, fill = Resultat)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Nombre de candidats acceptés définitivement par date", x = "Date", y = "Nombre de candidats")  +
+  scale_y_continuous(breaks = seq(0,20,by = 2))
+
+AdmisDefProv <- subset(PileData, Resultat == "Admis_Def" | Resultat == "Admis_Prov" )  
+ggplot(AdmisDefProv, aes(x = DateFichier, fill = Resultat)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Nombre de candidats acceptés (définitivement ou provisoirement) par date", x = "Date", y = "Nombre de candidats")  +
+  scale_y_continuous(breaks = seq(0,20,by = 2))
+
+PileData %>% filter(Resultat == "Admis_Def" | Resultat == "Admis_Prov" | Resultat == "AttenteRep") %>% ggplot(aes(x = DateFichier, fill = Resultat)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Nombre d'étudiants potentiels par date", x = "Date", y = "Nombre de candidats")  +
+  scale_y_continuous(breaks = seq(0,50,by = 2)) # écrit en tidyyverse c'est quand même plus classe ! 
+```
+
+## Répartition des étudiants pour l'EHESS puis pour l'ENS 
+
+```{r}
+#| echo: false
+table(EHESS$Statut_EHESS)
+
+table(ENS$Statut_ENS)
+
+table(SyntheseDuJour$Resultat, SyntheseDuJour$Etb)
+
+```
+
+*il faudra refaire cette sortie avec une nouvelle variable Etb qui est calculée y compris pour ceux el LC etc.*
+
+```{r}
+#| echo: false
+SyntheseDuJour %>% group_by(Resultat,) %>% summarise(Count = n())
+```
+
+Synthèse du jour :
+
+```{r}
+#| echo: false
+SyntheseDuJour  |> 
+  group_by(Resultat, Etb) |>  
+  summarise(Count = n())  |> 
+  ggplot(aes(x = Resultat, y = Count, fill = Etb)) + 
+  geom_bar(stat = "identity")
+
+```
+
+# Suivi des listes d'attente
+
+-   Rang 1er LC de l'EHESS : `r min(SyntheseDuJour$Classement[SyntheseDuJour$LC_EHESS == 1], na.rm = TRUE)`
+
+-   Candidat 1er LC de l'EHESS : `r min(SyntheseDuJour$Candidat[SyntheseDuJour$LC_EHESS == 1], na.rm = TRUE)`
+
+-   Rang du LC1 de l'EHESS sur la liste de l'ENS : `r min(SyntheseDuJour$LC_ENS[SyntheseDuJour$LC_EHESS == 1], na.rm = TRUE)`
+
+-   Rang 1er LC de l'ENS : `r min(SyntheseDuJour$Classement[SyntheseDuJour$LC_ENS == 1], na.rm = TRUE)`
+
+-   Candidat 1er LC de l'ENS : `r min(SyntheseDuJour$Candidat[SyntheseDuJour$LC_ENS == 1], na.rm = TRUE)`
+
+-   Rang du dernier sur LC.
+
+    -   ENS : `r SyntheseDuJour |> tail(n = 1) |> select(LC_ENS)`
+
+    -   EHESS : `r SyntheseDuJour |> tail(n = 1) |> select(LC_EHESS)`
+
+# Les évolutions du jour 
+
+```{r évolutions du jour}
+#| echo: false
+
+SyntheseDuJour |> 
+  left_join(SyntheseVeille |> select(id, Resultat), by = "id") |> 
+  filter(Resultat.x != Resultat.y) |> 
+  rename(Resultat = Resultat.x) |> 
+  select(Candidat, Resultat, Classement, NoteEval, Commentaires)
+
+```
+
+# Description des candidats acceptés
+
+## Listes des candidats admis à l'ENS
+
+### Admis définitivement (ENS)
+
+```{r}
+#| echo: false
+SyntheseDuJour |> 
+  filter(Resultat == "Admis_Def" & Etb == "ENS") |> 
+  select(Candidat, Classement, NoteEval, Commentaires)
+```
+
+### Admis provisoirement (ENS)
+
+```{r}
+#| echo: false
+SyntheseDuJour |> 
+  filter(Resultat == "Admis_Prov" & Etb == "ENS") |> 
+  select(Candidat, LC_EHESS, Classement, NoteEval, Commentaires)
+```
+
+## Listes des candidats admis à l'EHESS
+
+### Admis définitivement (EHESS)
+
+```{r}
+#| echo: false
+SyntheseDuJour |> 
+  filter(Resultat == "Admis_Def" & Etb == "EHESS") |> 
+  select(Candidat, Resultat, Classement, NoteEval, Commentaires)
+```
+
+### Admis provisoirement (EHESS)
+
+```{r}
+#| echo: false
+SyntheseDuJour |> 
+  filter(Resultat == "Admis_Prov" & Etb == "ENS") |> 
+  select(Candidat, LC_ENS, Classement, NoteEval, Commentaires)
+```
+
+il faudrait aller récupérer le rang actuel à PDI des admis provisoirement
+
+## Rangs et classements des admis 
+
+```{r}
+#| echo: false
+SyntheseDuJour |> 
+  filter(Resultat == "Admis_Def" | Resultat  == "Admis_Prov") |> 
+  group_by(RankCl, Etb) |> 
+  summarize(count = n(), .groups =  "keep")  |> 
+  ggplot(aes(x = RankCl, y = count, fill = "Etb")) + 
+  geom_bar(stat = "identity")+
+  theme(axis.text.x = element_text(angle = 0, hjust = 1))
+```
+
+je cherche à avoir une couleur pour l'ehess et une autre pour l'ens ; à voir quand on aura plus de données mais a priori ça ne fonctionne pas
+
+## Genre des admis
+
+```{r}
+#| echo: false
+SyntheseDuJour |> 
+  filter(Resultat == "Admis_Def" | Resultat  == "Admis_Prov")  |>   
+  group_by(Genre) |> 
+  summarise(Count = n())
+
+admis <- SyntheseDuJour |> 
+  filter(Resultat == "Admis_Def" | Resultat  == "Admis_Prov")  
+
+round(prop.table(table(admis$Genre))*100,0)
+```
+
+Pour mémoire genre des candidats
+
+```{r}
+#| echo: false
+BaseCandidat |> 
+  mutate(Genre = if_else(Civilite == "M.", "Homme", "Femme")) |> 
+  group_by(Genre) |> 
+  summarize(nbe = n(),
+            pct = round(nbe/nrow(BaseCandidat)*100,1))
+
+```
+
+et genre des 90 sélectionné.es :
+
+```{r}
+#| echo: false
+SyntheseDuJour |> 
+  mutate(Genre = if_else(Civilite == "M.", "Homme", "Femme")) |> 
+  group_by(Genre) |> 
+  summarize(nbe = n(),
+            pct = round(nbe/nrow(SyntheseDuJour)*100,1))
+```
+
+## Âge des admis
+
+```{r}
+#| echo: false
+SyntheseDuJour |> 
+  filter(Resultat == "Admis_Def" | Resultat  == "Admis_Prov") |> 
+  group_by(Age) |> 
+  summarise(Count = n())
+```
+
+## Mention bac des admis 
+
+```{r}
+#| echo: false
+table(admis$MentionBac)
+round(prop.table(table(admis$MentionBac))*100,1)
+```
+
+# Évolution de la liste d'attente 
+
+```{r}
+#| echo: false
+PileData |> 
+  filter(Resultat == "LC" ) |> 
+ggplot(aes(x = DateFichier, fill = Resultat)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Nombre de candidats en liste d'attente par date", x = "Date", y = "Nombre de candidats")
+```
+
+# Suivi individualisé 
+
+## Suivi de qqs étudiant.es d'intérêt
+
+```{r}
+#| echo: false
+(PileData %>% filter(Candidat == "GUIBORA Quentin") %>% select(Candidat,DateFichier, Resultat, Statut_EHESS, Statut_ENS))
+(PileData %>% filter(Candidat == "Brochard Madison") %>% select(Candidat,DateFichier, Resultat, Statut_EHESS, Statut_ENS, LC_EHESS, LC_ENS))
+(PileData %>% filter(Candidat == "Marec Virgile") %>% select(Candidat,DateFichier, Resultat, Statut_EHESS, Statut_ENS, LC_EHESS, LC_ENS))
+(PileData %>% filter(Candidat == "Guironnet Axel") %>% select(Candidat,DateFichier, Resultat, Statut_EHESS, Statut_ENS, LC_EHESS, LC_ENS))
+(PileData %>% filter(Candidat == "Fillion Tristan") %>% select(Candidat,DateFichier, Resultat, Statut_EHESS, Statut_ENS, LC_EHESS, LC_ENS))
+(PileData %>% filter(Candidat == "Bonnan Mickael") %>% select(Candidat,DateFichier, Resultat, Statut_EHESS, Statut_ENS, LC_EHESS, LC_ENS))
+(PileData %>% filter(Candidat == "Saive Amandine") %>% select(Candidat,DateFichier, Resultat, Statut_EHESS, Statut_ENS, LC_EHESS, LC_ENS))
+```
+
+## Suivi des étudiants QESS reçus à PDI 
+
+```{r}
+#| echo: false
+PileData  |> 
+  filter(!is.na(PDI) & PDI != "NC")  |> 
+  select(Candidat, DateFichier, Resultat, Statut_EHESS, Statut_ENS, LC_EHESS, LC_ENS, PDI) |> 
+  arrange(Candidat)
+```
