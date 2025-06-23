@@ -11,6 +11,7 @@ editor: visual
 
 library(arrow)
 source("3.ImportFichiersMM.R", encoding = "UTF-8")
+
 ```
 
 # Évolution des statuts de candidature
@@ -41,7 +42,7 @@ ggplot(AdmisDefProv, aes(x = DateFichier, fill = Resultat)) +
   geom_bar() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   labs(title = "Nombre de candidats acceptés (définitivement ou provisoirement) par date", x = "Date", y = "Nombre de candidats")  +
-  scale_y_continuous(breaks = seq(0,20,by = 2))
+  scale_y_continuous(breaks = seq(0,22,by = 2))
 
 PileData %>% filter(Resultat == "Admis_Def" | Resultat == "Admis_Prov" | Resultat == "AttenteRep") %>% ggplot(aes(x = DateFichier, fill = Resultat)) +
   geom_bar() +
@@ -50,13 +51,13 @@ PileData %>% filter(Resultat == "Admis_Def" | Resultat == "Admis_Prov" | Resulta
   scale_y_continuous(breaks = seq(0,50,by = 2)) # écrit en tidyyverse c'est quand même plus classe ! 
 ```
 
-## Répartition des étudiants pour l'EHESS puis pour l'ENS 
+## Répartition des étudiants pour l'EHESS puis pour l'ENS
 
 ```{r}
 #| echo: false
-table(EHESS$Statut_EHESS)
+table(SyntheseDuJour$St_EHESS)
 
-table(ENS$Statut_ENS)
+table(SyntheseDuJour$St_ENS)
 
 table(SyntheseDuJour$Resultat, SyntheseDuJour$Etb)
 
@@ -77,7 +78,8 @@ SyntheseDuJour  |>
   group_by(Resultat, Etb) |>  
   summarise(Count = n())  |> 
   ggplot(aes(x = Resultat, y = Count, fill = Etb)) + 
-  geom_bar(stat = "identity")
+  geom_bar(stat = "identity")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 ```
 
@@ -95,11 +97,56 @@ SyntheseDuJour  |>
 
 -   Rang du dernier sur LC.
 
-    -   ENS : `r SyntheseDuJour |> tail(n = 1) |> select(LC_ENS)`
+    -   ENS : `r SyntheseDuJour |>  select(LC_ENS) |>  max(na.rm=TRUE)`
 
-    -   EHESS : `r SyntheseDuJour |> tail(n = 1) |> select(LC_EHESS)`
+    -   EHESS : `r SyntheseDuJour |>  select(LC_EHESS) |>  max(na.rm=TRUE)`
 
-# Les évolutions du jour 
+### Evolution du surbooking
+
+-   le 5 juin il y a 6 places d'écart entre la liste de l'ehess (qui avance très vite) et celle de l'ens. Je fais donc le choix de réduire de 3 places le surbooking de l'ehess pour éviter que les meilleurs étudiants sur LC ENS ne soient pas appelés.
+
+-   Le 6 juin après avoir passé le surbooking ehess à 11 j'ai rétabli les deux listes exactement au même niveau : 39. Well Done!
+
+-   8 juin : BOISNARD Eloïse & EL OMARI Chaymaa acceptent définitivement mais admissibles aux 3 ENS. Sinon on en est à 10 Def (dont 2 admissibles ENS) + 8 provisoires ==\> 18 pour 18 places ==\> il faut réduire le surbooking car on a 5 attente de Rep (dont au moins MAREC qui devrait prendre ; je l'ai eu au tel). + L'EHESS est deux rangs plus bas que l'ENS. Les 2 admissibles se sont inscrites à l'ENS. Petit dilemne néanmoins : l'ENS est à 12 admis (dont 5 prov) alors que l'EHESS n'est qu'à 6 admis (dont 3 prov). Il faut donc arrêter le surbooking ENS pour sûr. Je pense que ça oblige à arrêter le surbooking EHESS (ou à fortement le limiter). Peut être le laisser à 10 ? Pour le moment on n'a personne qui bloque la file en étant admis prov EHESS / LC ENS. Il y a 5 attente de rep à EHESS (+6 = 11) ==\> J'arrête le surbooking sur les deux listes et j'écris aux étudiants.
+
+-   9 juin : en fait il y aussi Zoé Arbrun qui est admissible à Saclay seulement (mais alors qu'elle est au CPES !) ; elle accepté définitivement l'ehess. Peut être moins de chance de succès que les deux autres + Nathan Boyer, AdmisProv ENS, m'a écrit car hésite entre nous et un master IEP
+
+-   11 juin : Telma Guionet-Roussel (Admis_Prov EHESS, tjrs LC PDI) et Abdelkadeur TADJI (Admis_Prov ENS) sont tous les deux admissibles au DENS Paris ; faudrait regarder Lyon et Saclay
+
+## Le suivi des doubles candidatures par étudiant :
+
+-   EL OMARI Chaymaa (Admis_Def ENS) : admissibles aux trois ENS par le concours B/L, ainsi que par la voie étudiante pour les diplômes de Lyon et de Saclay. J’ai également été admise en master d’économie à Sciences Po, mais je n’ai pas encore fait de choix définitif quant à la formation que je privilégierais si je devais choisir entre ces deux options.
+
+-   LAROSE Candice (Admis_Prov ENS) : Admise aux DENS Ulm et Saclay ==\> départ
+
+-   BOYER Nathan (Admis_Prov ENS) : Admis à un master de sociologie de ScPo alors qu'il veut faire de l'évaluation de politiques publiques au Costa rica ; eu en zoom et je ne savais pas trop quoi lui conseiller
+
+-   BOISNARD Eloïse (Admis_Def ENS) : Admissible aux 3 ENS
+
+-   ARBRUN Zoé (Admis_Def EHESS) : Admissible Saclay
+
+### Les admis prov bloquent-ils la liste ?
+
+```{r}
+#| echo: false
+SyntheseDuJour |> 
+  filter(Resultat == "Admis_Prov") |> 
+  select(Candidat, St_EHESS, St_ENS)
+```
+
+Version que les bloqueurs pour une lecture plus rapide
+
+```{r}
+#| echo: false
+
+SyntheseDuJour |> 
+  filter(Resultat == "Admis_Prov") |>  
+  filter(Statut_EHESS == "EN_ATTENTE_DE_REPONSE" | Statut_ENS == "EN_ATTENTE_DE_REPONSE" | Statut_EHESS == "LISTE_ATTENTE" | Statut_ENS == "LISTE_ATTENTE") |> 
+  select(Candidat, St_EHESS, St_ENS)
+
+```
+
+# Les évolutions du jour
 
 ```{r évolutions du jour}
 #| echo: false
@@ -107,12 +154,19 @@ SyntheseDuJour  |>
 SyntheseDuJour |> 
   left_join(SyntheseVeille |> select(id, Resultat), by = "id") |> 
   filter(Resultat.x != Resultat.y) |> 
-  rename(Resultat = Resultat.x) |> 
-  select(Candidat, Resultat, Classement, NoteEval, Commentaires)
+  rename(Resultat = Resultat.x, Hier = Resultat.y) |> 
+  select(Candidat, Resultat, Hier, Etb, Classement, NoteEval, Commentaires)
 
 ```
 
 # Description des candidats acceptés
+
+## La liste des admis prov et def
+
+```{r}
+#| echo: false
+SyntheseDuJour |>  filter(Resultat == "Admis_Def" | Resultat == "Admis_Prov") |> select(Candidat, Resultat, Etb) |> arrange(Candidat)
+```
 
 ## Listes des candidats admis à l'ENS
 
@@ -150,13 +204,13 @@ SyntheseDuJour |>
 ```{r}
 #| echo: false
 SyntheseDuJour |> 
-  filter(Resultat == "Admis_Prov" & Etb == "ENS") |> 
+  filter(Resultat == "Admis_Prov" & Etb == "EHESS") |> 
   select(Candidat, LC_ENS, Classement, NoteEval, Commentaires)
 ```
 
 il faudrait aller récupérer le rang actuel à PDI des admis provisoirement
 
-## Rangs et classements des admis 
+## Rangs et classements des admis
 
 ```{r}
 #| echo: false
@@ -219,7 +273,7 @@ SyntheseDuJour |>
   summarise(Count = n())
 ```
 
-## Mention bac des admis 
+## Mention bac des admis
 
 ```{r}
 #| echo: false
@@ -227,39 +281,86 @@ table(admis$MentionBac)
 round(prop.table(table(admis$MentionBac))*100,1)
 ```
 
-# Évolution de la liste d'attente 
+# Évolution de la liste d'attente
 
 ```{r}
 #| echo: false
-PileData |> 
-  filter(Resultat == "LC" ) |> 
+PileData |>
+  filter(Resultat == "LC" ) |>
 ggplot(aes(x = DateFichier, fill = Resultat)) +
   geom_bar() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   labs(title = "Nombre de candidats en liste d'attente par date", x = "Date", y = "Nombre de candidats")
 ```
 
-# Suivi individualisé 
+# Suivi individualisé
 
 ## Suivi de qqs étudiant.es d'intérêt
 
 ```{r}
 #| echo: false
-(PileData %>% filter(Candidat == "GUIBORA Quentin") %>% select(Candidat,DateFichier, Resultat, Statut_EHESS, Statut_ENS))
-(PileData %>% filter(Candidat == "Brochard Madison") %>% select(Candidat,DateFichier, Resultat, Statut_EHESS, Statut_ENS, LC_EHESS, LC_ENS))
-(PileData %>% filter(Candidat == "Marec Virgile") %>% select(Candidat,DateFichier, Resultat, Statut_EHESS, Statut_ENS, LC_EHESS, LC_ENS))
-(PileData %>% filter(Candidat == "Guironnet Axel") %>% select(Candidat,DateFichier, Resultat, Statut_EHESS, Statut_ENS, LC_EHESS, LC_ENS))
-(PileData %>% filter(Candidat == "Fillion Tristan") %>% select(Candidat,DateFichier, Resultat, Statut_EHESS, Statut_ENS, LC_EHESS, LC_ENS))
-(PileData %>% filter(Candidat == "Bonnan Mickael") %>% select(Candidat,DateFichier, Resultat, Statut_EHESS, Statut_ENS, LC_EHESS, LC_ENS))
-(PileData %>% filter(Candidat == "Saive Amandine") %>% select(Candidat,DateFichier, Resultat, Statut_EHESS, Statut_ENS, LC_EHESS, LC_ENS))
+# (PileData %>% filter(Candidat == "GUIBORA Quentin") %>% select(Candidat,DateFichier, Resultat, St_EHESS, St_ENS))
+# (PileData %>% filter(Candidat == "Brochard Madison") %>% select(Candidat,DateFichier, Resultat, Statut_EHESS, Statut_ENS, LC_EHESS, LC_ENS))
+#(PileData %>% filter(Candidat == "Marec Virgile") %>% select(Candidat,DateFichier, Resultat, St_EHESS, St_ENS, LC_EHESS, LC_ENS))
+(PileData %>% filter(Candidat == "GUIRONNET Axel") %>% select(Candidat,DateFichier, Resultat, St_EHESS, St_ENS, LC_EHESS, LC_ENS))
+(PileData %>% filter(Candidat == "FILLION Tristan") %>% select(Candidat,DateFichier, Resultat, St_EHESS, St_ENS, LC_EHESS, LC_ENS))
+(PileData |>  filter(Candidat == "LOPEZ Aitor")  |>  select(Candidat,DateFichier, Resultat, St_EHESS, St_ENS, LC_EHESS, LC_ENS))
+(PileData |>  filter(Candidat == "CHAMINADE Antoine")  |>  select(Candidat,DateFichier, Resultat, St_EHESS, St_ENS, LC_EHESS, LC_ENS))
+(PileData |>  filter(Candidat == "YAZBECK Marianne")  |>  select(Candidat,DateFichier, Resultat, St_EHESS, St_ENS, LC_EHESS, LC_ENS))
+  
+#(PileData %>% filter(Candidat == "Bonnan Mickael") %>% select(Candidat,DateFichier, Resultat, St_EHESS, St_ENS, LC_EHESS, LC_ENS))
+# (PileData %>% filter(Candidat == "Saive Amandine") %>% select(Candidat,DateFichier, Resultat, Statut_EHESS, Statut_ENS, LC_EHESS, LC_ENS))
 ```
 
-## Suivi des étudiants QESS reçus à PDI 
+## Suivi des étudiants QESS reçus à PDI
+
+```         
+```
+
+### Suivi des étudiants qui ont refusé QESS
 
 ```{r}
 #| echo: false
 PileData  |> 
-  filter(!is.na(PDI) & PDI != "NC")  |> 
-  select(Candidat, DateFichier, Resultat, Statut_EHESS, Statut_ENS, LC_EHESS, LC_ENS, PDI) |> 
+  filter((!is.na(PDI) & PDI != "NC" & Resultat == "Refusé") | Synt_PDI == "Admis_Def")  |> 
+    group_by(Candidat) |> 
+  arrange(desc(DateFichier)) |> 
+  distinct(Candidat, .keep_all = TRUE) |> 
+  select(Candidat, DateFichier, Resultat, Synt_PDI, PDI) |> 
   arrange(Candidat)
+
+
 ```
+
+### Suivi des étudiants qui ont accepté QESS (yc provisoirement) ou sont en attente de réponse
+
+```{r}
+#| echo: false
+PileData  |> 
+  filter(!is.na(Synt_PDI) & PDI != "NC" & Resultat != "Refusé" & Synt_PDI !="Admis_Def" & DateFichier == Sys.Date())  |> 
+  group_by(Candidat) |> 
+  arrange(desc(DateFichier)) |> 
+  distinct(Candidat, .keep_all = TRUE) |> 
+  select(Candidat, DateFichier, Resultat, Synt_PDI, PDI) |> 
+  arrange(Resultat)
+
+
+```
+
+# La tête provisoire de la promo
+
+::: landscape
+```{r}
+#| echo: false
+
+t <- SyntheseDuJour |> 
+  filter(Resultat== "Admis_Def" | Resultat == "Admis_Prov") |> 
+  arrange(Classement) |> 
+  mutate(
+    Bio = str_glue("{Genre} {Age} ans, bac : {MentionBac}, {Cursus}"),
+    Rslt = str_glue(("{Resultat}-{Etb}")), 
+    pres = str_glue("{Classement}-{Rslt}-{Candidat}, {Bio}")) |> 
+  select(pres )
+print(t, right = FALSE)
+```
+:::
