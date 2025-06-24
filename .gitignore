@@ -1,9 +1,5 @@
 <<<<<<< HEAD
-.Rproj.user
-.Rhistory
-.RData
-.Ruserdata
-=======
+
 # History files
 .Rhistory
 .Rapp.history
@@ -51,6 +47,10 @@ docs/
 # translation temp files
 po/*~
 
+# des ajouts de Damien 
+*.docx
+*.xlsx
+*.parquet
 # RStudio Connect folder
 rsconnect/
 >>>>>>> a69174d5a4f72aec4b235b7c5d40bb41e724586c
