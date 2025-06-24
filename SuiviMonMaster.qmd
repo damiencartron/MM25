@@ -113,7 +113,23 @@ SyntheseDuJour  |>
 
 -   11 juin : Telma Guionet-Roussel (Admis_Prov EHESS, tjrs LC PDI) et Abdelkadeur TADJI (Admis_Prov ENS) sont tous les deux admissibles au DENS Paris ; faudrait regarder Lyon et Saclay
 
-## Le suivi des doubles candidatures par étudiant :
+-   24 juin : fin de la phase complémentaire (si j'ai bien compris ils ne pouvaient pas trop bouger durant la semaine de la phase d'ordonnemecement de leurs candidatures ; Logan pex m'a écrit pour me dire qu'il ne parvenait pas à passer en Def durant cette semaine).
+
+    -    TADJI (ENS) a refusé (je pense qu’il a été pris à un DENS)
+
+    -    Logan (EHESS) a accepté définitivement
+
+    -    Telma (EHESS) m’a enfin écrit, elle est LC1 (depuis la fin de la phase complémentaire) à PDI et c’est son premier choix
+
+    -    Marianne (EHESS) ne m’a toujours pas écrit je vais lui écrire (ce sont nos deux dernières admis prov) ; elle vient de sortir de la LC sur QESS ENS
+
+    -   ==\> on n'a plus que 2 ENS en surbooking (avec 2 tri-admissibles) et deux risques de départ à l'EHESS
+
+    <div>
+
+    ## Le suivi des doubles candidatures par étudiant :
+
+    </div>
 
 -   EL OMARI Chaymaa (Admis_Def ENS) : admissibles aux trois ENS par le concours B/L, ainsi que par la voie étudiante pour les diplômes de Lyon et de Saclay. J’ai également été admise en master d’économie à Sciences Po, mais je n’ai pas encore fait de choix définitif quant à la formation que je privilégierais si je devais choisir entre ces deux options.
 
@@ -303,9 +319,9 @@ ggplot(aes(x = DateFichier, fill = Resultat)) +
 # (PileData %>% filter(Candidat == "Brochard Madison") %>% select(Candidat,DateFichier, Resultat, Statut_EHESS, Statut_ENS, LC_EHESS, LC_ENS))
 #(PileData %>% filter(Candidat == "Marec Virgile") %>% select(Candidat,DateFichier, Resultat, St_EHESS, St_ENS, LC_EHESS, LC_ENS))
 (PileData %>% filter(Candidat == "GUIRONNET Axel") %>% select(Candidat,DateFichier, Resultat, St_EHESS, St_ENS, LC_EHESS, LC_ENS))
-(PileData %>% filter(Candidat == "FILLION Tristan") %>% select(Candidat,DateFichier, Resultat, St_EHESS, St_ENS, LC_EHESS, LC_ENS))
-(PileData |>  filter(Candidat == "LOPEZ Aitor")  |>  select(Candidat,DateFichier, Resultat, St_EHESS, St_ENS, LC_EHESS, LC_ENS))
-(PileData |>  filter(Candidat == "CHAMINADE Antoine")  |>  select(Candidat,DateFichier, Resultat, St_EHESS, St_ENS, LC_EHESS, LC_ENS))
+#(PileData %>% filter(Candidat == "FILLION Tristan") %>% select(Candidat,DateFichier, Resultat, St_EHESS, St_ENS, LC_EHESS, LC_ENS))
+#(PileData |>  filter(Candidat == "LOPEZ Aitor")  |>  select(Candidat,DateFichier, Resultat, St_EHESS, St_ENS, LC_EHESS, LC_ENS))
+#(PileData |>  filter(Candidat == "CHAMINADE Antoine")  |>  select(Candidat,DateFichier, Resultat, St_EHESS, St_ENS, LC_EHESS, LC_ENS))
 (PileData |>  filter(Candidat == "YAZBECK Marianne")  |>  select(Candidat,DateFichier, Resultat, St_EHESS, St_ENS, LC_EHESS, LC_ENS))
   
 #(PileData %>% filter(Candidat == "Bonnan Mickael") %>% select(Candidat,DateFichier, Resultat, St_EHESS, St_ENS, LC_EHESS, LC_ENS))
