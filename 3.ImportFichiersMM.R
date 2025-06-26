@@ -298,11 +298,11 @@ PileData <- PileData |>
 # Arnoux %>% filter(Statut == "ACCEPTEE_DEFINITIVEMENT" | Statut == "ACCEPTEE_NON_DEFINITIVEMENT") %>%  write.xlsx(paste0("Envoi_Lionel-Arnoux_", gsub("-", "", Sys.Date()), ".xlsx"), rowNames = FALSE)
 
 #écrire aux étudiants admis prov et def 
-# SyntheseDuJour |>
-#   filter(Resultat == "Admis_Def" | Resultat == "Admis_Prov") |>
-#   select(Candidat, Resultat, Etb, mail) |>
-#   arrange(Candidat) |>
-#   select(mail)
+SyntheseDuJour |>
+  filter(Resultat == "Admis_Def" | Resultat == "Admis_Prov") |>
+  select(Candidat, Resultat, Etb, mail) |>
+  arrange(Candidat) |>
+  select(mail)
 
 # écrire aux étudiants sur liste d'attente 
 # SyntheseDuJour |>
