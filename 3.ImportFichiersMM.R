@@ -280,29 +280,26 @@ PileData <- PileData |>
 
 
 
-## Base Candidat pour Envoi à Lionel Arnoux ENS -----
-# Arnoux <- read_excel("0753742K_EHESS PARIS1900125MCBW2.xlsx") %>% select(`Numéro de candidat`, `Civilité`, `Nom de naissance`, `Prénom`, `Date de naissance`, `Adresse e-mail`,  `Nationalité`, `INE maître (INES)` )
-# Arnoux <- merge(Arnoux, assign("ENSduJour", value = read_excel(paste0("Candidatures-EHESS PARIS-1900125MCBW2-",gsub("-", "", Sys.Date()),".xlsx")),envir = .GlobalEnv),
-#                 by.x = "Numéro de candidat", by.y = "Identifiant candidat", all = TRUE) %>%  select(-Candidat)
-# 
-# Arnoux[dim(Arnoux)[1]+1,1] <- "MasterScDurabilité"
-# Arnoux[dim(Arnoux)[1],2] <- "Mme"
-# Arnoux[dim(Arnoux)[1],3] <- "CHOISY"
-# Arnoux[dim(Arnoux)[1],4] <- "Lisa"
-# Arnoux[dim(Arnoux)[1],5] <- "13/05/2000"
-# Arnoux[dim(Arnoux)[1],6] <- "lisachoisy@hotmail.fr"
-# Arnoux[dim(Arnoux)[1],7] <- "Française"
-# Arnoux[dim(Arnoux)[1],8] <- "040011552HF"
-# Arnoux[dim(Arnoux)[1],9] <- "ACCEPTEE_DEFINITIVEMENT"
-# 
-# Arnoux %>% filter(Statut == "ACCEPTEE_DEFINITIVEMENT" | Statut == "ACCEPTEE_NON_DEFINITIVEMENT") %>%  write.xlsx(paste0("Envoi_Lionel-Arnoux_", gsub("-", "", Sys.Date()), ".xlsx"), rowNames = FALSE)
+## Base Candidat pour Envoi à l'ENS IAMaster -----
+IAmaster <- SyntheseDuJour |> 
+  filter(Etb == "ENS") |> 
+  left_join(read_excel("20250401_08H56_0753742K_EHESS PARIS_330_org.xlsx") |> 
+              rename(id = "Numéro de candidat", 
+                     INE = "INE/INA/BEA saisi par le candidat", 
+                     tel = "Numéro de téléphone principal", 
+                     tel2 = "Numéro de téléphone secondaire", 
+                     Nationalite = "Nationalité") |>
+              select(id, INE, tel, tel2, Nationalite),
+            by = "id") |> 
+  select(id, INE, Civilite, Nom, Prenom, Nationalite, DOB, mail, tel, tel2,  Resultat) |> 
+  write.xlsx("IAmaster.xlsx")
 
 #écrire aux étudiants admis prov et def 
-SyntheseDuJour |>
-  filter(Resultat == "Admis_Def" | Resultat == "Admis_Prov") |>
-  select(Candidat, Resultat, Etb, mail) |>
-  arrange(Candidat) |>
-  select(mail)
+# SyntheseDuJour |>
+#   filter(Resultat == "Admis_Def" | Resultat == "Admis_Prov") |>
+#   select(Candidat, Resultat, Etb, mail) |>
+#   arrange(Candidat) |>
+#   select(mail)
 
 # écrire aux étudiants sur liste d'attente 
 # SyntheseDuJour |>

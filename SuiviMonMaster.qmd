@@ -125,7 +125,7 @@ SyntheseDuJour  |>
 
     -   Telma (EHESS) m’a enfin écrit, elle est LC1 (depuis la fin de la phase complémentaire) à PDI et c’est son premier choix ==\> a eu PDI le 25
 
-    -   Marianne (EHESS) ne m’a toujours pas écrit je vais lui écrire (ce sont nos deux dernières admis prov) ; elle vient de sortir de la LC sur QESS ENS
+    -   Marianne (EHESS) ne m’a toujours pas écrit je vais lui écrire (ce sont nos deux dernières admis prov) ; elle vient de sortir de la LC sur QESS ENS ; elle a en choix 1 le master MIgrations, et sinon hésite entre nous et un master pse hors mon master
 
     -   ==\> on n'a plus que 2 ENS en surbooking (avec 2 tri-admissibles) et deux risques de départ à l'EHESS
 
@@ -133,19 +133,29 @@ SyntheseDuJour  |>
 
 -   <div>
 
-    ## Le suivi des doubles candidatures par étudiant :
+    ## Le suivi des départs possibles des deux listes d'attente :
 
     </div>
 
--   EL OMARI Chaymaa (Admis_Def ENS) : admissibles aux trois ENS par le concours B/L, ainsi que par la voie étudiante pour les diplômes de Lyon et de Saclay. J’ai également été admise en master d’économie à Sciences Po, mais je n’ai pas encore fait de choix définitif quant à la formation que je privilégierais si je devais choisir entre ces deux options.
+-   ENS encore deux en surbooking
 
--   LAROSE Candice (Admis_Prov ENS) : Admise aux DENS Ulm et Saclay ==\> départ
+    -   EL OMARI Chaymaa (Admis_Def ENS) : admissibles aux trois ENS par le concours B/L, ainsi que par la voie étudiante pour les diplômes de Lyon et de Saclay. J’ai également été admise en master d’économie à Sciences Po, mais je n’ai pas encore fait de choix définitif quant à la formation que je privilégierais si je devais choisir entre ces deux options.
 
--   BOYER Nathan (Admis_Prov ENS) : Admis à un master de sociologie de ScPo alors qu'il veut faire de l'évaluation de politiques publiques au Costa rica ; eu en zoom et je ne savais pas trop quoi lui conseiller
+    -   BOISNARD Eloïse (Admis_Def ENS) : Admissible aux 3 ENS
 
--   BOISNARD Eloïse (Admis_Def ENS) : Admissible aux 3 ENS
+-   EHESS (0 surbooking)
 
--   ARBRUN Zoé (Admis_Def EHESS) : Admissible Saclay
+    -   ARBRUN Zoé (Admis_Def EHESS) : Admissible Saclay
+
+    -   YAZBECK Marianne (Admis_Prov EHESS) : En liste d'attente à Migrations (choix 1), prise à PSE (hors mon master) + nous (et n'a pas choisi entre les deux)
+
+    -   RASPAUD Alexandre (Admis_Prov EHESS) : je vais écrire
+
+-   Sortis :
+
+    -   LAROSE Candice (Admis_Prov ENS) : Admise aux DENS Ulm et Saclay ==\> départ
+
+    -   BOYER Nathan (Admis_Prov ENS) : Admis à un master de sociologie de ScPo alors qu'il veut faire de l'évaluation de politiques publiques au Costa rica ; eu en zoom et je ne savais pas trop quoi lui conseiller==\> le 26 juin m'a écrit pour me dire qu'il nous avait choisi
 
 ### Les admis prov bloquent-ils la liste ?
 
